@@ -1,15 +1,15 @@
 # search.py
 # ---------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
@@ -129,11 +129,87 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    actions = []
+    if problem.isGoalState(problem.getStartState()):
+        return (actions)
+
+    search_queue = util.Queue()
+    visited = dict()
+    init_state = problem.getStartState()
+    visited[init_state] = [None, None]
+    successors = problem.getSuccessors(problem.getStartState())
+    for i in successors:
+        search_queue.push([i,init_state])
+
+    while not search_queue.isEmpty():
+        queue_element = search_queue.pop()
+        curr_state, prev_state = queue_element[0], queue_element[1]
+        visited[curr_state[0]] = [prev_state,curr_state[1]]
+        successors = problem.getSuccessors(curr_state[0])
+        for i in successors:
+            if i[0] not in visited and i not in search_queue.list:
+                if problem.isGoalState(i[0]):
+                    actions.insert(0,i[1])
+                    j = curr_state[0]
+                    while visited[j][1] is not None:
+                        actions.insert(0,visited[j][1])
+                        j = visited[j][0]
+
+                search_queue.push([i,curr_state[0]])
+
+    return actions
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+    actions = []
+
+    search_queue = util.PriorityQueue()
+    visited = dict()
+    init_state = problem.getStartState()
+    if problem.isGoalState(problem.getStartState()):
+        return (actions)
+    #([(current_state,action,cost to get to this state),parent state,cost up to parent), cost up to parent)
+    search_queue.push([(init_state,None,0),None,0],0)
+    #visited[init_state] = [None, None]
+    #successors = problem.getSuccessors(problem.getStartState())
+    #for i in successors:
+    #    search_queue.push([i,init_state])
+
+    while not search_queue.isEmpty():
+        queue_element = search_queue.pop()
+        curr_node, prev_state, curr_cost = queue_element[0], queue_element[1], queue_element[2]
+        curr_state = curr_node[0]
+        #print curr_node, curr_cost
+        #print curr_state, prev_state
+        if curr_state in visited:
+            continue
+        #                     [parent,action from parent,current cost]
+        visited[curr_state] = [prev_state,curr_node[1],curr_cost]
+        #print visited
+        if problem.isGoalState(curr_state):
+            actions.insert(0,visited[curr_state][1])
+            j = visited[curr_state][0]
+            while visited[j][1] is not None:
+                actions.insert(0,visited[j][1])
+                j = visited[j][0]
+            print actions
+            break
+        successors = problem.getSuccessors(curr_state)
+        #print successors
+        for i in successors:
+            #print i
+            new_cost = curr_cost + i[2]
+            if i[0] not in visited:
+                #print curr_cost, i[2]
+                #new_cost = curr_cost + i[2]
+                #print new_cost
+                search_queue.push([i,curr_state,new_cost],new_cost)
+            elif new_cost < visited[i[0]][2]:
+                search_queue.push([i,curr_state,new_cost],new_cost)
+
+    return actions
     util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
