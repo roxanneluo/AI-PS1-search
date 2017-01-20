@@ -18,8 +18,9 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
-import util
 from sets import Set
+import util
+from game import Actions
 
 class SearchProblem:
     """
@@ -143,8 +144,47 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    start_state = problem.getStartState()
+    start_g_cost = 0
+    start_f_cost = start_g_cost + heuristic(start_state, problem)
+    q = util.PriorityQueue()
+    q.push(start_state, start_f_cost)
+    # another way is to put g_cost in the queue entry.
+    # key: state, value: [action from parent, g_cost, f_cost]
+    action_cost_dict = {start_state: [None, start_g_cost, start_f_cost]}
+    visited = Set()
+    
+    while not q.isEmpty():
+        cur_state = q.pop()
+        if cur_state in visited:
+            continue
+        if problem.isGoalState(cur_state):
+            goal_state = cur_state
+            break
+        visited.add(cur_state)
+        cur_g_cost = action_cost_dict[cur_state][1]
+        for next_state, action, act_cost in problem.getSuccessors(cur_state):
+            if next_state not in visited:
+                g_cost = cur_g_cost + act_cost 
+                f_cost = g_cost + heuristic(next_state, problem)
+                q.push(next_state, f_cost)
+                if next_state not in action_cost_dict or \
+                        f_cost < action_cost_dict[next_state][2]:
+                    action_cost_dict[next_state] = [action, g_cost, f_cost]
+
+    
+    actions = []
+    cur_state = goal_state
+    while cur_state != start_state:
+        action = action_cost_dict[cur_state][0]
+        actions.insert(0, action)
+        backward_action = Actions.reverseDirection(action)
+        cur_state = Actions.getSuccessor(cur_state, backward_action)
+    return actions
+
+
+
 
 
 # Abbreviations
