@@ -91,25 +91,26 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     visited = Set()
-    # each element is <explored_idx, [[sibling_state, action_from_parent, cost],...]>
+    # each element is <explored_idx, [[sibling_state, action_from_parent],...]> 
+    # if cost is needed, its last element of each entry of the list can be the cost
     dfs_stack = util.Stack() 
     start_state = problem.getStartState()
-    dfs_stack.push([-1, [[start_state,None, None]]])
+    dfs_stack.push([-1, [[start_state,None]]])
 
     while not dfs_stack.isEmpty():
         prev_idx, cur_list = dfs_stack.pop()
         cur_idx = prev_idx + 1
         if cur_idx < len(cur_list) and cur_list[cur_idx][0] not in visited:
-            cur_state, cur_action, cur_cost = cur_list[cur_idx]
+            cur_state, cur_action = cur_list[cur_idx]
             visited.add(cur_state)
             dfs_stack.push([cur_idx, cur_list])
             if problem.isGoalState(cur_state) :
                 break
 
             next_idx, next_list = -1, []
-            for next_state, next_action, next_cost in reversed(problem.getSuccessors(cur_state)):
+            for next_state, next_action, act_cost in reversed(problem.getSuccessors(cur_state)):
                 if next_state not in visited:
-                    next_list.append([next_state, next_action, next_cost])
+                    next_list.append([next_state, next_action])
             if len(next_list) > 0:
                 dfs_stack.push([next_idx, next_list])
 
