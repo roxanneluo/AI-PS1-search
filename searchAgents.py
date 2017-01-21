@@ -1,15 +1,15 @@
 # searchAgents.py
 # ---------------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
@@ -289,21 +289,38 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.costFn = lambda x: 1
 
     def getStartState(self):
-        #[(x,y), {(x,y): true, }]
+        #(x,y,l)
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        "*** YOUR CODE HERE ***"
+        corners = (False,False,False,False)
+        for i,corner in enumerate(self.corners):
+            if corner == self.startingPosition:
+                corners[i] = True
+        return (self.startingPosition, corners)
         util.raiseNotDefined()
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        "*** YOUR CODE HERE ***"
+        all_corners_visited = True
+        on_a_corner = False
+        for i,corners in enumerate(self.corners):
+            if corners == state[0]:
+                on_a_corner = True
+            if not state[1][i]:
+                all_corners_visited = False
+                break
+
+
+        return on_a_corner and all_corners_visited
+
+
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -316,17 +333,37 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-
+        #position search succesors
+        # successors = []
+        # for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
+        #     x,y = state
+        #     dx, dy = Actions.directionToVector(action)
+        #     nextx, nexty = int(x + dx), int(y + dy)
+        #     if not self.walls[nextx][nexty]:
+        #         nextState = (nextx, nexty)
+        #         cost = self.costFn(nextState)
+        #         successors.append( ( nextState, action, cost) )
+        "*** YOUR CODE HERE ***"
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+              x,y = state[0]
+              dx, dy = Actions.directionToVector(action)
+              nextx, nexty = int(x + dx), int(y + dy)
+              hitsWall = self.walls[nextx][nexty]
+              if not hitsWall:
+                  curr_corners = list(state[1])
+                  for i,corner in enumerate(self.corners):
+                      if curr_corners[i]:
+                          continue
+                      if (nextx, nexty) == corner:
+                          curr_corners[i] = True
+                          break
+                  nextState = ((nextx, nexty),tuple(curr_corners))
 
-            "*** YOUR CODE HERE ***"
+                  cost = self.costFn(nextState)
+                  successors.append( ( nextState, action, cost) )
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
