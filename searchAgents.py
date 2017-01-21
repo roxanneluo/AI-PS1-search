@@ -400,12 +400,12 @@ def cornersHeuristic(state, problem):
 
     pos, corner_set = state
     corners = problem.corners # These are the corner coordinates
-    min_dist_to_corner = math.inf
-    for exist, corner in zip(corner_set, corners):
-        if exist: 
+    min_dist_to_corner = float("inf")
+    for visited, corner in zip(corner_set, corners):
+        if not visited: 
             min_dist_to_corner = min(min_dist_to_corner,
                     util.manhattanDistance(pos, corner))
-    if min_dist_to_corner == math.inf:
+    if min_dist_to_corner == float("inf"): 
         return 0
     return min_dist_to_corner
 
@@ -499,9 +499,18 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
-    position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    position, foodGrid = state
+    num_food = foodGrid.count()
+    if num_food <= 0:
+        return 0
+    food_list = foodGrid.asList()
+    min_food_dist = float("inf")
+    for food in food_list:
+        min_food_dist = min(min_food_dist,
+                util.manhattanDistance(food, position))
+
+    return num_food -1 + min_food_dist
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
