@@ -515,12 +515,21 @@ def foodHeuristic(state, problem):
     if num_food <= 0:
         return 0
     food_list = foodGrid.asList()
-    min_food_dist = float("inf")
-    for food in food_list:
-        min_food_dist = min(min_food_dist,
-                util.manhattanDistance(food, position))
+    if num_food == 1:
+        return util.manhattanDistance(position, food_list[0])
 
-    return num_food -1 + min_food_dist
+    max_dist_between_food = 0
+    farthest_food = []
+    for fx in food_list:
+        for fy in food_list:
+            if not fx == fy:
+                dist = util.manhattanDistance(fx, fy)
+                if dist > max_dist_between_food:
+                    max_dist_between_food = dist
+                    farthest_food = [fx, fy]
+    min_dist = min([util.manhattanDistance(position, fx) for fx in farthest_food])
+    return min_dist + max_dist_between_food
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
