@@ -35,6 +35,7 @@ description for details.
 Good luck and happy searching!
 """
 
+import math
 from game import Directions
 from game import Agent
 from game import Actions
@@ -398,14 +399,14 @@ def cornersHeuristic(state, problem):
     #walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     pos, corner_set = state
-    if not corner_set:
-        return 0
     corners = problem.corners # These are the corner coordinates
-    min_dist_to_corner = inf
-    for corner in corners:
-        if corner in corner_set:
+    min_dist_to_corner = math.inf
+    for exist, corner in zip(corner_set, corners):
+        if exist: 
             min_dist_to_corner = min(min_dist_to_corner,
                     util.manhattanDistance(pos, corner))
+    if min_dist_to_corner == math.inf:
+        return 0
     return min_dist_to_corner
 
 class AStarCornersAgent(SearchAgent):
