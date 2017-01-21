@@ -560,7 +560,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        path = search.aStarSearch(problem, heuristic=foodHeuristic)
+        path = search.aStarSearch(problem)
         return path
         util.raiseNotDefined()
 
