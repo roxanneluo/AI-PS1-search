@@ -91,9 +91,9 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
     visited = Set()
-    # each element is <explored_idx, [[sibling_state, action_from_parent],...]> 
+    # each element is <explored_idx, [[sibling_state, action_from_parent],...]>
     # if cost is needed, its last element of each entry of the list can be the cost
-    dfs_stack = util.Stack() 
+    dfs_stack = util.Stack()
     start_state = problem.getStartState()
     dfs_stack.push([-1, [[start_state,None]]])
 
@@ -130,33 +130,32 @@ def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
     actions = []
-    if problem.isGoalState(problem.getStartState()):
-        return (actions)
-
     search_queue = util.Queue()
-    visited = dict()
+    visited = set()
+    visit_dict = dict() # dict: key = curr_state , data: parent, action
     init_state = problem.getStartState()
-    visited[init_state] = [None, None]
-    successors = problem.getSuccessors(problem.getStartState())
-    for i in successors:
-        search_queue.push([i,init_state])
+    search_queue.push(init_state)
+    visit_dict[init_state] = (None,None)
 
     while not search_queue.isEmpty():
-        queue_element = search_queue.pop()
-        curr_state, prev_state = queue_element[0], queue_element[1]
-        visited[curr_state[0]] = [prev_state,curr_state[1]]
-        successors = problem.getSuccessors(curr_state[0])
-        for i in successors:
-            if i[0] not in visited and i not in search_queue.list:
-                if problem.isGoalState(i[0]):
-                    actions.insert(0,i[1])
-                    j = curr_state[0]
-                    while visited[j][1] is not None:
-                        actions.insert(0,visited[j][1])
-                        j = visited[j][0]
+        curr_state = search_queue.pop()
+        if curr_state in visited:
+            continue
+        visited.add(curr_state)
+        if problem.isGoalState(curr_state):
+            goal_state = curr_state
+            break
+        for next_state,action,_ in problem.getSuccessors(curr_state):
+            if not (next_state in visited):
+                if next_state not in visit_dict:
+                    visit_dict[next_state] = (curr_state,action)
+                search_queue.push(next_state)
 
-                search_queue.push([i,curr_state[0]])
-
+    j = goal_state
+    while visit_dict[j][1] is not None:
+        actions.insert(0,visit_dict[j][1])
+        j = visit_dict[j][0]
+    print actions
     return actions
     util.raiseNotDefined()
 
@@ -168,14 +167,8 @@ def uniformCostSearch(problem):
     search_queue = util.PriorityQueue()
     visited = dict()
     init_state = problem.getStartState()
-    if problem.isGoalState(problem.getStartState()):
-        return (actions)
-    #([(current_state,action,cost to get to this state),parent state,cost up to parent), cost up to parent)
+    #([(current_state,action,cost to get to this state),parent state,cost), cost)
     search_queue.push([(init_state,None,0),None,0],0)
-    #visited[init_state] = [None, None]
-    #successors = problem.getSuccessors(problem.getStartState())
-    #for i in successors:
-    #    search_queue.push([i,init_state])
 
     while not search_queue.isEmpty():
         queue_element = search_queue.pop()
@@ -200,14 +193,12 @@ def uniformCostSearch(problem):
         #print successors
         for i in successors:
             #print i
-            new_cost = curr_cost + i[2]
             if i[0] not in visited:
                 #print curr_cost, i[2]
-                #new_cost = curr_cost + i[2]
+                new_cost = curr_cost + i[2]
                 #print new_cost
                 search_queue.push([i,curr_state,new_cost],new_cost)
-            elif new_cost < visited[i[0]][2]:
-                search_queue.push([i,curr_state,new_cost],new_cost)
+
 
     return actions
     util.raiseNotDefined()
@@ -231,7 +222,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     # key: state, value: [action from parent, g_cost, f_cost]
     action_cost_dict = {start_state: [None, start_g_cost, start_f_cost]}
     visited = Set()
-    
+
     while not q.isEmpty():
         cur_state = q.pop()
         if cur_state in visited:
@@ -243,14 +234,14 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         cur_g_cost = action_cost_dict[cur_state][1]
         for next_state, action, act_cost in problem.getSuccessors(cur_state):
             if next_state not in visited:
-                g_cost = cur_g_cost + act_cost 
+                g_cost = cur_g_cost + act_cost
                 f_cost = g_cost + heuristic(next_state, problem)
                 q.push(next_state, f_cost)
                 if next_state not in action_cost_dict or \
                         f_cost < action_cost_dict[next_state][2]:
                     action_cost_dict[next_state] = [action, g_cost, f_cost]
 
-    
+
     actions = []
     cur_state = goal_state
     while cur_state != start_state:
